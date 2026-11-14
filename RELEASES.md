@@ -1,49 +1,55 @@
-# Release artifacts
+# Release packages and incremental updates
 
-This repository is the dedicated nightly distribution channel for
-[Operit2](https://github.com/AAswordman/Operit2).
+Operit2 publishes both release and preview assets in
+[the main repository Releases](https://github.com/AAswordman/Operit2/releases).
+This documentation repository does not provide a third update channel.
 
-## Versions and source
+## Versions
 
-Tags use `v<major>.<minor>.<patch>-nightly.<N>`. Each published snapshot is a
-GitHub prerelease. The release notes must link the source commit and identify the
-builds used to produce its packages. Published package bytes are immutable: a
-rebuild uses a new nightly number.
+Stable tags use `v2.0.0` and GitHub's prerelease flag is false. Preview tags use
+`v2.0.0-preview.1` and the prerelease flag is true. Existing rc/dev identifiers use
+the preview channel. Stable installations select stable releases; preview
+installations can select previews and subsequent stable versions, using SemVer.
+Published packages are immutable: rebuilds require a new product version.
 
 ## Packages
 
-Package filenames identify product, platform, architecture, distribution when
-applicable, and full release version:
-
 ```text
 operit2-<product>-<platform>-<architecture>[-<distribution>]-<version>.<extension>
+<package>.update.json
+<package>.from-<base-sha256>.patch.gz
 ```
 
-Full packages remain downloadable from each release. Incremental updates are
-additional transfer artifacts, not replacements for system installers.
+The update manifest uses schema 1 and contains `version`, `assetName`, `sha256`,
+`size` and `patches`. Each patch declares `baseVersion`, `baseSha256`, `baseSize`,
+`assetName`, `sha256` and `size`. Different architectures, macOS sandbox/unsandbox
+distributions and Windows MSI/ZIP formats have independent base packages.
 
-## Incremental metadata
+## Binary patch protocol
 
-For a full package named `<package>`, the release can provide:
+The gzip payload starts with the nine bytes `O2PATCH1` followed by a zero byte,
+then little-endian u64 base and target sizes and their raw 32-byte SHA-256 hashes.
+Instructions are END=0, COPY=1 followed by u64 offset and length, and ADD=2
+followed by u64 length and literal bytes. Every generated delta is independently
+reconstructed and only included when smaller than the complete package.
 
-- `<package>.update.json`: schema version, target version, exact package name,
-  target byte size, target SHA-256, and supported base packages.
-- `<package>.from-<base-sha256>.patch.gz`: a compressed COPY/ADD stream for one
-  exact base package. It includes base and target sizes and SHA-256 values.
+Clients authenticate the manifest using GitHub's asset digest, bind the target
+hash to the full package digest, verify the exact base and patch, and verify the
+reconstructed package before installation. They preserve existing native
+installation and permission flows. Desktop updates without a retained original
+package use a full transfer; this seeds a base for later updates.
 
-The client authenticates the manifest with the SHA-256 digest returned by the
-GitHub Releases API, verifies the selected patch, reconstructs the complete
-package, and checks the result before handing it to the platform installer.
-Different architectures and macOS distributions have different packages and
-cannot share patches.
+## Tooling and publication
 
-Android can read a monolithic installed APK as a base. Desktop installations use
-a retained, previously verified package. A first desktop installation without a
-retained package uses a full transfer. An invalid or interrupted selected patch
-reports an error; it does not silently start another download.
+The source repository contains `tools/updates/patch.py`, `tools/updates/prepare.py`,
+`tools/release/incremental.py` and `tools/release/publish_dist.py`. Publication uses
+the authenticated GitHub CLI. The collector retains stable and preview histories
+independently and can produce direct preview-to-release patches. A first release
+has an empty patch list when no older package exists.
 
-## Reporting problems
+The publisher uploads a hidden draft, validates all GitHub asset digests and the
+complete asset set, then publishes it. Existing public releases cannot be overwritten.
+Signing remains part of each platform's normal package build.
 
-Open issues in the [main source repository](https://github.com/AAswordman/Operit2/issues).
-Include the full version, platform, package type, and relevant logs. Do not attach
-tokens, signing keys, personal conversations, or other private user data.
+Report problems in [the main repository](https://github.com/AAswordman/Operit2/issues)
+with the full version, platform, package format and relevant logs.
