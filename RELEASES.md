@@ -51,5 +51,20 @@ The publisher uploads a hidden draft, validates all GitHub asset digests and the
 complete asset set, then publishes it. Existing public releases cannot be overwritten.
 Signing remains part of each platform's normal package build.
 
+## Transfer priority and retry policy
+
+Each update selects one direct patch from an exact base to the target version.
+The manifest's other base patches are alternative routes and are not downloaded.
+A matching patch is used only when its size is strictly smaller than the full
+package; equal or larger transfers use the full package.
+
+If baseline extraction or patch reconstruction/verification fails, the current
+attempt reports the error. Subsequent attempts for the same target version and
+package family download the full package directly. This local decision persists
+across application restarts and cache cleanup; newer target versions and other
+architectures or installer formats are evaluated independently. User cancellation
+and ordinary network interruption do not disable delta retries. Full transfers
+always retain package digest and container verification.
+
 Report problems in [the main repository](https://github.com/AAswordman/Operit2/issues)
 with the full version, platform, package format and relevant logs.
