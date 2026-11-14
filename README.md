@@ -26,7 +26,12 @@ An exact base SHA-256 match is required. The reconstructed package must match th
 original published bytes, including installer signatures, before the existing
 platform installer is invoked. Android can read a monolithic installed APK;
 desktop applications retain verified original packages for subsequent updates.
-A selected patch failure is reported explicitly. System installation permissions
+A baseline extraction or patch reconstruction/verification failure is reported
+explicitly and makes subsequent attempts for that exact target use the full package.
+The decision persists across restarts; newer targets and other package types are
+evaluated independently. Cancelled requests and ordinary network interruptions can
+retry the delta. Only a delta smaller than the full package is selected.
+System installation permissions
 and platform confirmations continue to apply.
 
 ## Source and licensing
