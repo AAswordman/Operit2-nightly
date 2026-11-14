@@ -1,46 +1,37 @@
-# Operit2 Nightly Releases
+# Operit2 Release and Preview Updates
 
-Operit2 的 nightly 安装包和增量更新发布仓库。
+This repository contains documentation for Operit2 release packages and byte-exact
+incremental updates. The application uses two existing update channels: **release**
+and **preview**. Both resolve versions and download assets from the main project:
 
-This repository distributes development builds of **Operit2**, an open-source,
-cross-platform AI assistant. It is maintained alongside the main project; it is
-not a general-purpose file host.
+- [Source code](https://github.com/AAswordman/Operit2)
+- [Release and preview downloads](https://github.com/AAswordman/Operit2/releases)
+- [Issues and support](https://github.com/AAswordman/Operit2/issues)
+- [Package and incremental-update format](RELEASES.md)
+- [GNU AGPL v3 license](LICENSE)
 
-- **Source code / 源码**: [Operit2](https://github.com/AAswordman/Operit2)
-- **Nightly downloads / 下载**: [Releases](https://github.com/AAswordman/Operit2-nightly/releases)
-- **Issues / 问题反馈**: [Main project issues](https://github.com/AAswordman/Operit2/issues)
-- **Release format / 发布格式**: [RELEASES.md](RELEASES.md)
-- **License / 许可证**: [GNU AGPL v3](LICENSE)
-
-## What is published here?
-
-Nightly builds are development snapshots and may contain unfinished changes.
-Release notes identify the source revision used to build each snapshot. The
-source repository remains the place for development, review, and issue tracking.
-
-The planned desktop and mobile release formats include Android APKs, Windows
-portable ZIPs and MSI installers, macOS distribution-specific packages, Linux
-archives, and platform-specific CLI packages. A release may include only a subset
-of these targets. Download the package matching your platform and distribution.
-
-Nightly versions use `major.minor.patch-nightly.N` and are kept separate from the
-main project's stable and preview releases. This repository may initially have
-no downloadable release while the first build is being prepared.
+This repository does not define an additional application update channel. Its
+existing repository name is retained; the updater and publishing tools use
+`AAswordman/Operit2` for both release and preview distribution.
 
 ## Incremental updates
 
-The updater can use an incremental patch only when the exact installed or
-retained package matches the patch's base SHA-256. Patches reconstruct the
-original complete installer, including its original signature. The reconstructed
-package must pass size and SHA-256 checks before installation.
+Packages identify product, platform, architecture, distribution and version.
+Android APK, Windows ZIP/MSI, macOS distribution-specific PKG and Linux/CLI archive
+updates use the same binary patch protocol. Each package has an authenticated
+`.update.json` manifest and can have direct `.patch.gz` deltas from older exact
+packages. Complete installation packages remain available on every release.
 
-Each package's update manifest and patch assets are documented in
-[RELEASES.md](RELEASES.md). Platform installers still control installation and any
-required system confirmation. User data is not distributed in this repository.
+An exact base SHA-256 match is required. The reconstructed package must match the
+original published bytes, including installer signatures, before the existing
+platform installer is invoked. Android can read a monolithic installed APK;
+desktop applications retain verified original packages for subsequent updates.
+A selected patch failure is reported explicitly. System installation permissions
+and platform confirmations continue to apply.
 
-## Source availability
+## Source and licensing
 
-Operit2 source is available under the GNU Affero General Public License v3 in the
-[source repository](https://github.com/AAswordman/Operit2). Release notes
-link the exact corresponding source revision. Third-party components retain
-their respective licenses and notices in the source tree and distributions.
+Development and issue tracking belong in the main source repository. Release notes
+identify the corresponding source revision. Operit2 is licensed under GNU AGPL v3;
+third-party components retain their own licenses. No personal user data is published
+here. This repository may contain documentation only while release builds are prepared.
