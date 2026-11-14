@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Operit2 issues
+    url: https://github.com/AAswordman/Operit2/issues
+    about: Report application and nightly update problems in the source repository.
